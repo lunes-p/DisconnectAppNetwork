@@ -1,7 +1,7 @@
 # Adapted from uYouEnhanced.
 # https://github.com/arichornlover/uYouEnhanced/blob/main/.github/workflows/buildapp.yml
 
-name: Build DisconnectAppNetwork (Jailed)
+name: Build DisconnectAppNetwork (rootful)
 
 on:
   workflow_dispatch:
@@ -76,26 +76,12 @@ jobs:
         env:
           THEOS: ${{ github.workspace }}/theos
 
-      - name: Setup Theos Jailed
-        uses: actions/checkout@v5
-        with:
-          repository: qnblackcat/theos-jailed
-          ref: master
-          path: theos-jailed
-          submodules: recursive
-
-      - name: Install Theos Jailed
-        run: |
-          ./theos-jailed/install
-        env:
-          THEOS: ${{ github.workspace }}/theos
-
       - name: Fix compiling & Build Package
         id: build_package
         run: |
           cd ${{ github.workspace }}/main
           sed -i '' "1s#.*#export TARGET = iphone:clang:${{ inputs.sdk_version }}:14.0#g" Makefile # Modify the SDK version
-          make package THEOS_PACKAGE_SCHEME=rootless
+          make package
           echo "package=$(ls -t packages | head -n1)" >>$GITHUB_OUTPUT
           echo -e "==> \033[1mSHASUM256: $(shasum -a 256 packages/*.deb | cut -f1 -d' ')\033[0m"
 
